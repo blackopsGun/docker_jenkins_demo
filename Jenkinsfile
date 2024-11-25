@@ -34,7 +34,7 @@ pipeline {
             steps {
                 script {
                     try {
-                        withCredentials([usernamePassword(credentialsId: 'jaddu-pass', 
+                        withCredentials([usernamePassword(credentialsId: 'jaadu-pass', 
                                                           usernameVariable: 'DOCKER_USERNAME', 
                                                           passwordVariable: 'DOCKER_PASSWORD')]) {
                             sh """
