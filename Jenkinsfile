@@ -1,12 +1,10 @@
 pipeline {
     agent any
-    
     environment {
         GIT_REPOSITORY_URL = 'https://github.com/blackopsGun/docker_jenkins_demo.git'
-        DOCKER_IMAGE_NAME = 'blackopsgun/16-docker_jenkins_demo'
+        DOCKER_IMAGE_NAME = 'blackopsgun/jenkins-python-demo-16'
         IMAGE_TAG = '1.0'
     }
-    
     stages {
         stage('Clone Repository') {
             steps {
@@ -14,13 +12,12 @@ pipeline {
                     try {
                         git branch: 'main', url: GIT_REPOSITORY_URL
                     } catch (Exception e) {
-                        echo "Failed to clone repo: ${e.message}"
-                        error "Failed to clone repository"
+                        echo "Failed to clone repository: ${e.message}"
+                        error "Pipeline aborted: Failed to clone repository."
                     }
                 }
             }
         }
-        
         stage('Build Docker Image') {
             steps {
                 script {
@@ -28,24 +25,27 @@ pipeline {
                         docker.build("${DOCKER_IMAGE_NAME}:${IMAGE_TAG}")
                     } catch (Exception e) {
                         echo "Failed to build Docker image: ${e.message}"
-                        error "Docker image build failed"
+                        error "Pipeline aborted: Failed to build Docker image."
                     }
                 }
             }
         }
-        
-        stage('Push to Docker Hub') {
+        stage('Push to DockerHub') {
             steps {
                 script {
                     try {
-                        withCredentials([usernamePassword(credentialsId: '1234', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        withCredentials([usernamePassword(credentialsId: 'my-docker-hub-credential-id', 
+                                                          usernameVariable: 'DOCKER_USERNAME', 
+                                                          passwordVariable: 'DOCKER_PASSWORD')]) {
                             sh """
-                                docker push ${DOCKER_IMAGE_NAME}:${IMAGE_TAG}
+                            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                            docker push ${DOCKER_IMAGE_NAME}:${IMAGE_TAG}
+                            docker logout
                             """
                         }
                     } catch (Exception e) {
-                        echo "Failed to push image to Docker Hub: ${e.message}"
-                        error "Docker push failed"
+                        echo "Failed to push Docker image to registry: ${e.message}"
+                        error "Pipeline aborted: Failed to push Docker image."
                     }
                 }
             }
