@@ -1,0 +1,47 @@
+=pipeline {
+	agent any
+	enviorment {
+		GIT_REPOSITORY_URL = 'https://github.com/blackopsGun/docker_jenkins_demo.git'
+		DOCKER_IMAGE_NAME = 'blackopsgun'/16-docker_jenkins_demo
+		IMAGE_TAG = '1.0'
+	}
+	stages {
+		stage('clone repo'){
+		steps{
+		script { 
+		try {
+		git branch: 'main', url: GIT_REPOSITORY_URL
+}catch (Exception e) {
+	echo "Failed to clone repo: ${e.message}"
+	error "fail to clone repo"
+}
+
+
+}
+		
+}
+
+}
+
+	stage ('build docker img'){
+	steps{
+	script{
+	try{
+	docker.build("${DOCKER_IMAGE_NAME}:${IMAGE_TAG}")
+}catch (Exception e){
+ echo "failed to build dockerimg: ${e.message}"
+error "doc img fail"
+}
+}
+}
+}
+
+stage ('push to dockerhub'){
+steps{
+script{
+try{
+withCredentials([usernamePassword(credentialsId: '1234')])
+}
+}
+}
+}
